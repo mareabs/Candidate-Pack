@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Candidate link builder · HomeToGo Group</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="assets/css/book.css">
+  <style>
+    body { display: block; height: auto; overflow: auto; }
+    .builder { width: min(760px, 100%); margin: 0 auto; padding: 40px 20px 64px; }
+    .builder h1 { font-size: clamp(28px, 5vw, 40px); margin-bottom: .3em; }
+    .builder p { color: var(--muted-dark); font-size: 16px; }
+    form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin: 24px 0; }
+    label { display: grid; gap: 6px; font-size: 14px; font-weight: 500; }
+    label.wide { grid-column: 1 / -1; }
+    input, select, textarea {
+      font: inherit; font-size: 15px; color: #1E1B4B; background: #FBF9FE;
+      border: 0; border-radius: 10px; padding: 10px 12px;
+    }
+    textarea { resize: vertical; min-height: 60px; }
+    .out { display: flex; gap: 10px; flex-wrap: wrap; }
+    .out input { flex: 1 1 320px; }
+    .out button, .out a {
+      font: inherit; font-weight: 700; border: 0; border-radius: 999px; padding: 10px 18px; cursor: pointer;
+      background: var(--coral); color: var(--ink); text-decoration: none;
+    }
+    .out a { background: rgba(255,255,255,.14); color: var(--paper); }
+    .tip { font-size: 14px !important; margin-top: 18px; }
+    @media (max-width: 560px) { form { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="builder">
+    <p class="eyebrow on-dark">Talent Acquisition · internal tool</p>
+    <h1>Build a candidate link</h1>
+    <p>Fill in what you know. Empty fields fall back to neutral wording, so nothing shows up as a blank.</p>
+
+    <form id="f" autocomplete="off">
+      <label class="wide">Company
+        <select name="e" id="entity"></select>
+      </label>
+      <label>Candidate first name <input name="name" maxlength="30"></label>
+      <label>Role title <input name="role" maxlength="50"></label>
+      <label>Hiring manager <input name="hm" maxlength="40"></label>
+      <label>Hiring manager title <input name="hmTitle" maxlength="50"></label>
+      <label>Team name <input name="team" maxlength="40"></label>
+      <label>Team size <input name="size" inputmode="numeric" maxlength="4"></label>
+      <label class="wide">What the team owns (one sentence) <textarea name="owns" maxlength="90"></textarea></label>
+      <label class="wide">Why the role is open (one sentence) <textarea name="why" maxlength="90"></textarea></label>
+      <label>Interview length (minutes) <input name="length" inputmode="numeric" maxlength="3" placeholder="45"></label>
+      <label>Interview format <input name="format" maxlength="40" placeholder="Video call"></label>
+      <label>Reply within (working days) <input name="reply" inputmode="numeric" maxlength="2" placeholder="5"></label>
+      <label>Recruiter name <input name="recruiter" maxlength="40"></label>
+      <label class="wide">Recruiter email <input name="email" type="email" maxlength="60"></label>
+      <label>Office (optional override) <input name="office" maxlength="40"></label>
+      <label>Working language (optional override) <input name="lang" maxlength="40"></label>
+    </form>
+
+    <div class="out">
+      <input id="url" readonly aria-label="Candidate link">
+      <button type="button" id="copy">Copy link</button>
+      <a id="open" href="#" target="_blank" rel="noopener">Preview</a>
+    </div>
+    <p class="tip">Use first names only. Everything in the link is visible to anyone who has it, so keep internal notes out.</p>
+  </main>
+
+  <script src="assets/js/content.js"></script>
+  <script>
+    (function () {
+      var form = document.getElementById("f");
+      var sel = document.getElementById("entity");
+      var out = document.getElementById("url");
+      var open = document.getElementById("open");
+      Object.keys(window.PACK.entities).forEach(function (id) {
+        var ent = window.PACK.entities[id];
+        var o = document.createElement("option");
+        o.value = id;
+        o.textContent = ent.name + (ent.status === "draft" ? " (draft)" : "");
+        sel.appendChild(o);
+      });
+      var base = window.location.href.replace(/builder\.html.*$/, "");
+      function build() {
+        var params = new URLSearchParams();
+        Array.prototype.forEach.call(form.elements, function (el) {
+          if (el.name && el.value.trim()) params.set(el.name, el.value.trim());
+        });
+        var link = base + "?" + params.toString();
+        out.value = link;
+        open.href = link;
+      }
+      form.addEventListener("input", build);
+      document.getElementById("copy").addEventListener("click", function () {
+        out.select();
+        if (navigator.clipboard) navigator.clipboard.writeText(out.value);
+        else document.execCommand("copy");
+        this.textContent = "Copied";
+        var b = this;
+        setTimeout(function () { b.textContent = "Copy link"; }, 1500);
+      });
+      build();
+    })();
+  </script>
+</body>
+</html>
